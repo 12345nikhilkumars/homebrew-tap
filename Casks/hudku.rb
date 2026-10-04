@@ -7,7 +7,7 @@ cask "hudku" do
   desc "Tiny, fully native macOS launcher"
   homepage "https://github.com/12345nikhilkumars/hudku"
 
-  depends_on macos: ">= :tahoe"
+  depends_on macos: :tahoe
 
   app "Hudku.app"
 
