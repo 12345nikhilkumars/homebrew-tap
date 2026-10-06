@@ -1,0 +1,45 @@
+name: Update cask
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find the latest Hudku release
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=$(gh api repos/12345nikhilkumars/hudku/releases \
+            --jq '[.[] | select(.prerelease == false)][0].tag_name')
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+      - name: Update the cask if it is stale
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.release.outputs.tag }}
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          CURRENT=$(ruby -ne 'puts $1 if /version "([^"]+)"/' Casks/hudku.rb)
+          if [ "$CURRENT" = "$VERSION" ]; then
+            echo "cask already at $VERSION"
+            exit 0
+          fi
+          gh release download "$TAG" -R 12345nikhilkumars/hudku -p "*.dmg" -D dmg
+          SHA=$(sha256sum dmg/*.dmg | awk '{print $1}')
+          rm -rf dmg
+          sed -i "s/version \"[^\"]*\"/version \"$VERSION\"/" Casks/hudku.rb
+          sed -i "s/sha256 \"[^\"]*\"/sha256 \"$SHA\"/" Casks/hudku.rb
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/hudku.rb
+          git commit -m "hudku $VERSION"
+          git push

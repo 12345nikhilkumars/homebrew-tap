@@ -1,6 +1,6 @@
 cask "hudku" do
   version "0.0.2"
-  sha256 "f899a3a606b126ac2d1dee284d359b2aa5821db4727905d9216d6ebec7f70941"
+  sha256 "695191593932934e95168e2423caeb3e8549dd7fda8985ad8fcb79c8a982f435"
 
   url "https://github.com/12345nikhilkumars/hudku/releases/download/v#{version}/Hudku-#{version}.dmg"
   name "Hudku"
